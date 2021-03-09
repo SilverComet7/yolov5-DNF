@@ -1,4 +1,4 @@
-# -yolov5-DNF
+# yolov5-DNF
 使用yolov5检测DNF游戏画面，通过设计相应的算法来控制角色自动打怪。
 
 详细教学请移步b站，有很详细的讲解：https://www.bilibili.com/video/BV18r4y1A7BF/
