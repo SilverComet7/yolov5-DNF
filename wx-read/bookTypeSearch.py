@@ -14,6 +14,39 @@ import csv
 # 图片
 # 推荐值
 
+# https://weread.qq.com/web/bookListInCategory/newbook?maxIndex=20&rank=1
+
+typesDict = {
+    'top50飙升':'rising',
+    'top50/新书':'newbook',
+    'top200/总榜':'all',
+    '神作':'newrating_publish',
+    '神作/潜力':'newrating_potential_publish',
+     "精品小说":{
+        
+     },
+     "历史":{
+
+     },
+     "文学":{
+
+     },
+     "艺术":{
+
+     },
+     "人物传记":{
+
+     },
+     "哲学宗教":{
+
+     },
+     "计算机":{
+      
+     }
+}
+
+bookTypeIds = {'精品小说': '100000', '历史': '200000', '文学': '300000', '艺术': '400000', '人物传记': '500000', '哲学宗教': '600000', '计算机': '700000', '心理': '800000', '社会文化': '900000', '个人成长': '1000000', '经济理财': '1100000', '政治军事': '1200000', '童书': '1300000', '教育学习': '1400000', '科学技术': '1500000', '生活百科': '1600000', '期刊专栏': '1700000', '原版书': '1800000', '医学健康': '2100000', '男生小说': '1900001', '女生小说': '2000001'}
+
 
 def getWXBooks(booksId):
 
@@ -35,18 +68,19 @@ def getWXBooks(booksId):
 
 
 
-BookId = [700003,700004,700005,700006,700007]
-for i in BookId:
-    print(i)
-    bookInfo = getWXBooks(i)
+for bookType in bookTypeIds:
+    print(bookType)
+    for books in bookType:
+        print(books)
+        bookInfo = getWXBooks(bookTypeIds[i])
 
-    with open('{csvName}.csv'.format(csvName=i), 'w', encoding='UTF8', newline='') as f:
-        fieldnames = ['title', 'publishTime', 'category', 'intro',  'maxFreeChapter','newRating', 'free', 'price', 'cover']
-        writer = csv.DictWriter(f, fieldnames=fieldnames, restval='intro', extrasaction='ignore')
-
-        # 写入头
-        writer.writeheader()
-
-        for book in bookInfo:
-            # 写入数据
-            writer.writerow(book['bookInfo'])
+    # with open('{csvName}.csv'.format(csvName=i), 'w', encoding='UTF8', newline='') as f:
+    #     fieldnames = ['title', 'publishTime', 'category', 'intro',  'maxFreeChapter','newRating', 'free', 'price', 'cover']
+    #     writer = csv.DictWriter(f, fieldnames=fieldnames, restval='intro', extrasaction='ignore')
+    #
+    #     # 写入头
+    #     writer.writeheader()
+    #
+    #     for book in bookInfo:
+    #         # 写入数据
+    #         writer.writerow(book['bookInfo'])
