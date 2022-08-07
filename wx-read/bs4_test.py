@@ -25,8 +25,8 @@ for i in leftLinks4:
         print(res2.text)
         soup2 = BeautifulStoneSoup(res2.text)
         subLinks = soup2.find_all(class_=re.compile('ranking_page_header_categroy_item'))
-        if res2.text & 激活的不是最后一个:
-            nextBookId = nextBookId+1
+        # if res2.text & 激活的不是最后一个:
+        #     nextBookId = nextBookId+1
 print(leftDict)
 
 
