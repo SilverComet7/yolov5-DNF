@@ -2,7 +2,11 @@ import time
 import random
 import requests
 import csv
-
+import os
+from  getHomeStoreModul import getHomeStoreModulDict
+from multiprocessing_test import  multiplyHandle
+from multiprocessing.dummy import Pool
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 # 不重复，完整，中断要可续接，进数据库或者excel记录
 
 # 书名
@@ -68,19 +72,18 @@ def getWXBooks(booksId):
 
 
 
-for bookType in bookTypeIds:
-    print(bookType)
-    for books in bookType:
-        print(books)
-        bookInfo = getWXBooks(bookTypeIds[i])
+BookId = [700003,700004,700005,700006,700007]
+for i in BookId:
+    print(i)
+    bookInfo = getWXBooks(i)
 
-    # with open('{csvName}.csv'.format(csvName=i), 'w', encoding='UTF8', newline='') as f:
-    #     fieldnames = ['title', 'publishTime', 'category', 'intro',  'maxFreeChapter','newRating', 'free', 'price', 'cover']
-    #     writer = csv.DictWriter(f, fieldnames=fieldnames, restval='intro', extrasaction='ignore')
-    #
-    #     # 写入头
-    #     writer.writeheader()
-    #
-    #     for book in bookInfo:
-    #         # 写入数据
-    #         writer.writerow(book['bookInfo'])
+    with open('{csvName}.csv'.format(csvName=i), 'w', encoding='UTF8', newline='') as f:
+        fieldnames = ['title', 'publishTime', 'category', 'intro',  'maxFreeChapter','newRating', 'free', 'price', 'cover']
+        writer = csv.DictWriter(f, fieldnames=fieldnames, restval='intro', extrasaction='ignore')
+
+        # 写入头
+        writer.writeheader()
+
+        for book in bookInfo:
+            # 写入数据
+            writer.writerow(book['bookInfo'])
