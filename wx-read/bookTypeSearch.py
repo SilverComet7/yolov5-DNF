@@ -2,7 +2,11 @@ import time
 import random
 import requests
 import csv
-
+import os
+from  getHomeStoreModul import getHomeStoreModulDict
+from multiprocessing_test import  multiplyHandle
+from multiprocessing.dummy import Pool
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 # 不重复，完整，中断要可续接，进数据库或者excel记录
 
 # 书名
@@ -33,15 +37,11 @@ def getWXBooks(booksId):
             bookList.append(book)
     return bookList
 
-
-
-BookId = [700003,700004,700005,700006,700007]
-for i in BookId:
-    print(i)
-    bookInfo = getWXBooks(i)
-
-    with open('{csvName}.csv'.format(csvName=i), 'w', encoding='UTF8', newline='') as f:
-        fieldnames = ['title', 'publishTime', 'category', 'intro',  'maxFreeChapter','newRating', 'free', 'price', 'cover']
+def writeCSV(bookInfo,path):
+    with open(path, 'w', encoding='UTF8', newline='') as f:
+        fieldnames = ['title', 'publishTime', 'category', 'intro', 'maxFreeChapter', 'newRating', 'free',
+                      'price',
+                      'cover']
         writer = csv.DictWriter(f, fieldnames=fieldnames, restval='intro', extrasaction='ignore')
 
         # 写入头
@@ -50,3 +50,36 @@ for i in BookId:
         for book in bookInfo:
             # 写入数据
             writer.writerow(book['bookInfo'])
+
+def getWXBookTypeList(BookIds):
+    for i in BookIds:
+        parentPath = r'C:\Users\Administrator\PycharmProjects\yolov5-dnf\wx-read\{dirName}'.format(dirName=i['title'])
+        if not os.path.exists(parentPath):
+            os.mkdir(parentPath)
+            for t in i['sublist']:
+                subPath = r'{parentPath}\{csvName}-{totalCount}.csv'.format(
+                    parentPath=parentPath, csvName=t['title'], totalCount=t['totalCount'])
+                hasSubFile = os.path.exists(subPath)
+                if not hasSubFile:
+                    bookInfo = getWXBooks(t['CategoryId'])
+                    writeCSV(bookInfo, subPath)
+def thread_pool(sub_f,list):
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        res = [executor.submit(sub_f, j) for j in list]
+
+homeStore = getHomeStoreModulDict()
+BookIds = homeStore['categories'][0:2]
+print([i['title'] for i in BookIds])
+isPool = True
+start = time.time()
+if isPool:
+    print('多线程')
+    thread_pool(getWXBookTypeList,BookIds)
+    # pool = ProcessPoolExecutor(max_workers=5)
+    # results = pool.map(getWXBookTypeList,BookIds)
+else:
+    getWXBookTypeList(BookIds)
+end = time.time()
+print(f'多线程，耗时：{end - start}')
+
+

@@ -38,4 +38,3 @@ for i in leftLinks5:
         #     nextBookId = nextBookId+1
         # else:
         #     bookType = False
-print(leftDict)
