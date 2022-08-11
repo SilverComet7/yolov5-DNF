@@ -21,7 +21,7 @@ def sortWay(book):
     return book['bookInfo']['newRating']
 
 
-def getWXBooks(queryPath):
+def getWXBooks(queryPath,searchWord):
     # booksTitleSet = client.hget(searchKeyWord, 'booksTitleSet') or set()
     # maxIdx = int(client.hget(searchKeyWord, 'maxIdx')) if client.hget(searchKeyWord, 'maxIdx') is not None else 0
     maxIdx = 0
@@ -33,7 +33,7 @@ def getWXBooks(queryPath):
         rTime = random.randint(1, 3)  # 随机延迟，从1到3内取一个整数值
         time.sleep(rTime)  # 把随机取出的整数值传到等待函数中
         res = requests.get(
-            queryPath, params={'maxIdx': maxIdx, 'keyword': searchKeyWord, 'fragmentSize': 120, 'count': 20})
+            queryPath, params={'maxIdx': maxIdx, 'keyword': searchWord, 'fragmentSize': 120, 'count': 20})
         books = res.json()['books']
         if not totalCount:
             totalCount = res.json()['totalCount']
@@ -60,5 +60,5 @@ def getWXBooks(queryPath):
     return bookList
 
 
-books = getWXBooks('https://weread.qq.com/web/search/global')
+books = getWXBooks('https://weread.qq.com/web/search/global',searchKeyWord)
 mongodbWrite(searchKeyWord, books)

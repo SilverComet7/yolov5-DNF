@@ -2,7 +2,7 @@ import cv2 as cv
 import numpy as np
 
 
-img_path = "datasets/guiqi/test/61_93.jpg"
+img_path = "test/DNF.png"
 img = cv.imread(img_path)
 
 def img_show(img):
