@@ -12,8 +12,8 @@ from utils.general import (
     xyxy2xywh, xywh2xyxy, plot_one_box, strip_optimizer, set_logging)
 from models.experimental import attempt_load
 from direction_move import move
-# from small_recgonize import current_door, next_door
-# from skill_recgnize import skill_rec
+from small_recgonize import current_door, next_door
+from skill_recgnize import skill_rec
 import random
 
 
@@ -110,394 +110,395 @@ while True:
             det = non_max_suppression(pred, conf_thres, iou_thres, classes=classes, agnostic=agnostic_nms)
             gn = torch.tensor(img0.shape)[[1, 0, 1, 0]]
             det = det[0]
-            # if det is not None and len(det):
-            #     # Rescale boxes from img_size to im0 size
-            #     det[:, :4] = scale_coords(img.shape[2:], det[:, :4], img0.shape).round()
-            #
-            #     # Print results
-            #     for c in det[:, -1].unique():
-            #         n = (det[:, -1] == c).sum()  # detections per class
-            #
-            #     img_object = []
-            #     cls_object = []
-            #     # Write results
-            #     hero_conf = 0
-            #     hero_index = 0
-            #     for idx, (*xyxy, conf, cls) in enumerate(reversed(det)):
-            #         # if save_txt:  # Write to file
-            #         #     xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4)) / gn).view(-1).tolist()  # normalized xywh
-            #         #     with open(txt_path + '.txt', 'a') as f:
-            #         #         f.write(('%g ' * 5 + '\n') % (cls, *xywh))  # label format
-            #
-            #         xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4))).view(-1).tolist()
-            #         cls = int(cls)
-            #         img_object.append(xywh)
-            #         cls_object.append(names[cls])
-            #
-            #         if names[cls] == "hero" and conf > hero_conf:
-            #             hero_conf = conf
-            #             hero_index = idx
-            #
-            #         if view_img:  # Add bbox to image
-            #             label = '%s %.2f' % (names[int(cls)], conf)
-            #             plot_one_box(xyxy, img0, label=label, color=colors[int(cls)], line_thickness=2)
-            #
-            #     # 游戏
-            #     thx = 30  # 捡东西时，x方向的阈值
-            #     thy = 30  # 捡东西时，y方向的阈值
-            #     attx = 150  # 攻击时，x方向的阈值
-            #     atty = 50  # 攻击时，y方向的阈值
-            #
-            #     if current_door(img0) == 1 and time.time() - door1_time_start > 10:
-            #         door1_time_start = time.time()
-            #         # move(direct="RIGHT", action_cache=action_cache, press_delay=press_delay,
-            #         #      release_delay=release_delay)
-            #         # ReleaseKey(direct_dic["RIGHT"])
-            #         # directkeys.key_press("SPACE")
-            #         directkeys.key_press("CTRL")
-            #         time.sleep(1)
-            #         directkeys.key_press("ALT")
-            #         time.sleep(0.5)
-            #         action_cache = None
-            #     # 扫描英雄
-            #     if "hero" in cls_object:
-            #         # hero_xywh = img_object[cls_object.index("hero")]
-            #         hero_xywh = img_object[hero_index]
-            #         cv2.circle(img0, (int(hero_xywh[0]), int(hero_xywh[1])), 1, (0, 0, 255), 10)
-            #         # print(hero_index)
-            #         # print(cls_object.index("hero"))
-            #     else:
-            #         continue
-            #     # 打怪
-            #     if "monster" in cls_object or "BOSS" in cls_object:
-            #         min_distance = float("inf")
-            #         for idx, (c, box) in enumerate(zip(cls_object, img_object)):
-            #             if c == 'monster' or c == "BOSS":
-            #                 dis = ((hero_xywh[0] - box[0]) ** 2 + (hero_xywh[1] - box[1]) ** 2) ** 0.5
-            #                 if dis < min_distance:
-            #                     monster_box = box
-            #                     monster_index = idx
-            #                     min_distance = dis
-            #         if abs(hero_xywh[0] - monster_box[0]) < attx and abs(hero_xywh[1] - monster_box[1]) < atty:
-            #             if "BOSS" in cls_object:
-            #                 directkeys.key_press("R")
-            #                 directkeys.key_press("Q")
-            #                 # time.sleep(0.5)
-            #                 skill_name = skill_char[int(np.random.randint(len(skill_char), size=1)[0])]
-            #                 while True:
-            #                     if skill_rec(skill_name, img0):
-            #                         directkeys.key_press(skill_name)
-            #                         directkeys.key_press(skill_name)
-            #                         directkeys.key_press(skill_name)
-            #                         break
-            #                     else:
-            #                         skill_name = skill_char[int(np.random.randint(len(skill_char), size=1)[0])]
-            #
-            #             else:
-            #                 skill_name = skill_char[int(np.random.randint(len(skill_char), size=1)[0])]
-            #                 while True:
-            #                     if skill_rec(skill_name, img0):
-            #                         directkeys.key_press(skill_name)
-            #                         directkeys.key_press(skill_name)
-            #                         directkeys.key_press(skill_name)
-            #                         break
-            #                     else:
-            #                         skill_name = skill_char[int(np.random.randint(len(skill_char), size=1)[0])]
-            #             print("释放技能攻击")
-            #             if not action_cache:
-            #                 pass
-            #             elif action_cache not in ["LEFT", "RIGHT", "UP", "DOWN"]:
-            #                 ReleaseKey(direct_dic[action_cache.strip().split("_")[0]])
-            #                 ReleaseKey(direct_dic[action_cache.strip().split("_")[1]])
-            #                 action_cache = None
-            #             elif action_cache:
-            #                 ReleaseKey(direct_dic[action_cache])
-            #                 action_cache = None
-            #             # break
-            #         elif monster_box[1] - hero_xywh[1] < 0 and monster_box[0] - hero_xywh[0] > 0:
-            #             if abs(monster_box[1] - hero_xywh[1]) < thy:
-            #                 action_cache = move(direct="RIGHT", material=True, action_cache=action_cache,
-            #                                     press_delay=press_delay,
-            #                                     release_delay=release_delay)
-            #                 # break
-            #             elif hero_xywh[1] - monster_box[1] < monster_box[0] - hero_xywh[0]:
-            #                 action_cache = move(direct="RIGHT_UP", material=True, action_cache=action_cache,
-            #                                     press_delay=press_delay,
-            #                                     release_delay=release_delay)
-            #                 # break
-            #             elif hero_xywh[1] - monster_box[1] >= monster_box[0] - hero_xywh[0]:
-            #                 action_cache = move(direct="UP", material=True, action_cache=action_cache,
-            #                                     press_delay=press_delay,
-            #                                     release_delay=release_delay)
-            #             # break
-            #         elif monster_box[1] - hero_xywh[1] < 0 and monster_box[0] - hero_xywh[0] < 0:
-            #             if abs(monster_box[1] - hero_xywh[1]) < thy:
-            #                 action_cache = move(direct="LEFT", material=True, action_cache=action_cache,
-            #                                     press_delay=press_delay,
-            #                                     release_delay=release_delay)
-            #                 # break
-            #             elif hero_xywh[1] - monster_box[1] < hero_xywh[0] - monster_box[0]:
-            #                 action_cache = move(direct="LEFT_UP", material=True, action_cache=action_cache,
-            #                                     press_delay=press_delay,
-            #                                     release_delay=release_delay)
-            #                 # break
-            #             elif hero_xywh[1] - monster_box[1] >= hero_xywh[0] - monster_box[0]:
-            #                 action_cache = move(direct="UP", material=True, action_cache=action_cache,
-            #                                     press_delay=press_delay,
-            #                                     release_delay=release_delay)
-            #                 # break
-            #         elif monster_box[1] - hero_xywh[1] > 0 and monster_box[0] - hero_xywh[0] < 0:
-            #             if abs(monster_box[1] - hero_xywh[1]) < thy:
-            #                 action_cache = move(direct="LEFT", material=True, action_cache=action_cache,
-            #                                     press_delay=press_delay,
-            #                                     release_delay=release_delay)
-            #                 # break
-            #             elif monster_box[1] - hero_xywh[1] < hero_xywh[0] - monster_box[0]:
-            #                 action_cache = move(direct="LEFT_DOWN", material=True, action_cache=action_cache,
-            #                                     press_delay=press_delay,
-            #                                     release_delay=release_delay)
-            #                 # break
-            #             elif monster_box[1] - hero_xywh[1] >= hero_xywh[0] - monster_box[0]:
-            #                 action_cache = move(direct="DOWN", material=True, action_cache=action_cache,
-            #                                     press_delay=press_delay,
-            #                                     release_delay=release_delay)
-            #                 # break
-            #         elif monster_box[1] - hero_xywh[1] > 0 and monster_box[0] - hero_xywh[0] > 0:
-            #             if abs(monster_box[1] - hero_xywh[1]) < thy:
-            #                 action_cache = move(direct="RIGHT", material=True, action_cache=action_cache,
-            #                                     press_delay=press_delay,
-            #                                     release_delay=release_delay)
-            #                 # break
-            #             elif monster_box[1] - hero_xywh[1] < monster_box[0] - hero_xywh[0]:
-            #                 action_cache = move(direct="RIGHT_DOWN", material=True, action_cache=action_cache,
-            #                                     press_delay=press_delay,
-            #                                     release_delay=release_delay)
-            #                 # break
-            #             elif monster_box[1] - hero_xywh[1] >= monster_box[0] - hero_xywh[0]:
-            #                 action_cache = move(direct="DOWN", material=True, action_cache=action_cache,
-            #                                     press_delay=press_delay,
-            #                                     release_delay=release_delay)
-            #                 # break
-            #
-            #     # 移动到下一个地图
-            #     if "door" in cls_object and "monster" not in cls_object and "BOSS" not in cls_object and "material" not in cls_object and "money" not in cls_object:
-            #         for idx, (c, box) in enumerate(zip(cls_object, img_object)):
-            #             if c == 'door':
-            #                 door_box = box
-            #                 door_index = idx
-            #         if door_box[0] < img0.shape[0] // 2:
-            #             action_cache = move(direct="RIGHT", action_cache=action_cache, press_delay=press_delay,
-            #                                 release_delay=release_delay)
-            #             # break
-            #         elif door_box[1] - hero_xywh[1] < 0 and door_box[0] - hero_xywh[0] > 0:
-            #             if abs(door_box[1] - hero_xywh[1]) < thy and abs(door_box[0] - hero_xywh[0]) < thx:
-            #                 action_cache = None
-            #                 print("进入下一地图")
-            #                 # break
-            #             elif abs(door_box[1] - hero_xywh[1]) < thy:
-            #                 action_cache = move(direct="RIGHT", action_cache=action_cache, press_delay=press_delay,
-            #                                     release_delay=release_delay)
-            #                 # break
-            #             elif hero_xywh[1] - door_box[1] < door_box[0] - hero_xywh[0]:
-            #                 action_cache = move(direct="RIGHT_UP", action_cache=action_cache, press_delay=press_delay,
-            #                                     release_delay=release_delay)
-            #                 # break
-            #             elif hero_xywh[1] - door_box[1] >= door_box[0] - hero_xywh[0]:
-            #                 action_cache = move(direct="UP", action_cache=action_cache, press_delay=press_delay,
-            #                                     release_delay=release_delay)
-            #                 # break
-            #         elif door_box[1] - hero_xywh[1] < 0 and door_box[0] - hero_xywh[0] < 0:
-            #             if abs(door_box[1] - hero_xywh[1]) < thy and abs(door_box[0] - hero_xywh[0]) < thx:
-            #                 action_cache = None
-            #                 print("进入下一地图")
-            #                 # break
-            #             elif abs(door_box[1] - hero_xywh[1]) < thy:
-            #                 action_cache = move(direct="LEFT", action_cache=action_cache, press_delay=press_delay,
-            #                                     release_delay=release_delay)
-            #                 # break
-            #             elif hero_xywh[1] - door_box[1] < hero_xywh[0] - door_box[0]:
-            #                 action_cache = move(direct="LEFT_UP", action_cache=action_cache, press_delay=press_delay,
-            #                                     release_delay=release_delay)
-            #                 # break
-            #             elif hero_xywh[1] - door_box[1] >= hero_xywh[0] - door_box[0]:
-            #                 action_cache = move(direct="UP", action_cache=action_cache, press_delay=press_delay,
-            #                                     release_delay=release_delay)
-            #                 # break
-            #         elif door_box[1] - hero_xywh[1] > 0 and door_box[0] - hero_xywh[0] < 0:
-            #             if abs(door_box[1] - hero_xywh[1]) < thy and abs(door_box[0] - hero_xywh[0]) < thx:
-            #                 action_cache = None
-            #                 print("进入下一地图")
-            #                 # break
-            #             elif abs(door_box[1] - hero_xywh[1]) < thy:
-            #                 action_cache = move(direct="LEFT", action_cache=action_cache, press_delay=press_delay,
-            #                                     release_delay=release_delay)
-            #                 # break
-            #             elif door_box[1] - hero_xywh[1] < hero_xywh[0] - door_box[0]:
-            #                 action_cache = move(direct="LEFT_DOWN", action_cache=action_cache, press_delay=press_delay,
-            #                                     release_delay=release_delay)
-            #                 # break
-            #             elif door_box[1] - hero_xywh[1] >= hero_xywh[0] - door_box[0]:
-            #                 action_cache = move(direct="DOWN", action_cache=action_cache, press_delay=press_delay,
-            #                                     release_delay=release_delay)
-            #                 # break
-            #         elif door_box[1] - hero_xywh[1] > 0 and door_box[0] - hero_xywh[0] > 0:
-            #             if abs(door_box[1] - hero_xywh[1]) < thy and abs(door_box[0] - hero_xywh[0]) < thx:
-            #                 action_cache = None
-            #                 print("进入下一地图")
-            #                 # break
-            #             elif abs(door_box[1] - hero_xywh[1]) < thy:
-            #                 action_cache = move(direct="RIGHT", action_cache=action_cache, press_delay=press_delay,
-            #                                     release_delay=release_delay)
-            #                 # break
-            #             elif door_box[1] - hero_xywh[1] < door_box[0] - hero_xywh[0]:
-            #                 action_cache = move(direct="RIGHT_DOWN", action_cache=action_cache, press_delay=press_delay,
-            #                                     release_delay=release_delay)
-            #                 # break
-            #             elif door_box[1] - hero_xywh[1] >= door_box[0] - hero_xywh[0]:
-            #                 action_cache = move(direct="DOWN", action_cache=action_cache, press_delay=press_delay,
-            #                                     release_delay=release_delay)
-            #                 # break
-            #     if "money" not in cls_object and "material" not in cls_object and "monster" not in cls_object \
-            #             and "BOSS" not in cls_object and "door" not in cls_object and 'box' not in cls_object \
-            #             and 'options' not in cls_object:
-            #         # if next_door(img0) == 0 and abs(time.time()) - next_door_time > 10:
-            #         #     next_door_time = time.time()
-            #         #     action_cache = move(direct="LEFT", action_cache=action_cache, press_delay=press_delay,
-            #         #                         release_delay=release_delay)
-            #         #     # time.sleep(3)
-            #         # else:
-            #         #     action_cache = move(direct="RIGHT", action_cache=action_cache, press_delay=press_delay,
-            #         #                     release_delay=release_delay)
-            #
-            #         action_cache = move(direct="RIGHT", action_cache=action_cache, press_delay=press_delay,
-            #                             release_delay=release_delay)
-            #         # break
-            #
-            #     # 捡材料
-            #     if "monster" not in cls_object and "hero" in cls_object and (
-            #             "material" in cls_object or "money" in cls_object):
-            #         min_distance = float("inf")
-            #         hero_xywh[1] = hero_xywh[1] + (hero_xywh[3] // 2) * 0.7
-            #         thx = thx / 2
-            #         thy = thy / 2
-            #         for idx, (c, box) in enumerate(zip(cls_object, img_object)):
-            #             if c == 'material' or c == "money":
-            #                 dis = ((hero_xywh[0] - box[0]) ** 2 + (hero_xywh[1] - box[1]) ** 2) ** 0.5
-            #                 if dis < min_distance:
-            #                     material_box = box
-            #                     material_index = idx
-            #                     min_distance = dis
-            #         if abs(material_box[1] - hero_xywh[1]) < thy and abs(material_box[0] - hero_xywh[0]) < thx:
-            #             if not action_cache:
-            #                 pass
-            #             elif action_cache not in ["LEFT", "RIGHT", "UP", "DOWN"]:
-            #                 ReleaseKey(direct_dic[action_cache.strip().split("_")[0]])
-            #                 ReleaseKey(direct_dic[action_cache.strip().split("_")[1]])
-            #                 action_cache = None
-            #             else:
-            #                 ReleaseKey(direct_dic[action_cache])
-            #                 action_cache = None
-            #             time.sleep(1)
-            #             directkeys.key_press("X")
-            #             print("捡东西")
-            #             # break
-            #
-            #         elif material_box[1] - hero_xywh[1] < 0 and material_box[0] - hero_xywh[0] > 0:
-            #
-            #             if abs(material_box[1] - hero_xywh[1]) < thy:
-            #                 action_cache = move(direct="RIGHT", material=True, action_cache=action_cache,
-            #                                     press_delay=press_delay,
-            #                                     release_delay=release_delay)
-            #                 # break
-            #             elif hero_xywh[1] - material_box[1] < material_box[0] - hero_xywh[0]:
-            #                 action_cache = move(direct="RIGHT_UP", material=True, action_cache=action_cache,
-            #                                     press_delay=press_delay,
-            #                                     release_delay=release_delay)
-            #                 # break
-            #             elif hero_xywh[1] - material_box[1] >= material_box[0] - hero_xywh[0]:
-            #                 action_cache = move(direct="UP", material=True, action_cache=action_cache,
-            #                                     press_delay=press_delay,
-            #                                     release_delay=release_delay)
-            #                 # break
-            #         elif material_box[1] - hero_xywh[1] < 0 and material_box[0] - hero_xywh[0] < 0:
-            #             if abs(material_box[1] - hero_xywh[1]) < thy:
-            #                 action_cache = move(direct="LEFT", material=True, action_cache=action_cache,
-            #                                     press_delay=press_delay,
-            #                                     release_delay=release_delay)
-            #                 # break
-            #             elif hero_xywh[1] - material_box[1] < hero_xywh[0] - material_box[0]:
-            #                 action_cache = move(direct="LEFT_UP", material=True, action_cache=action_cache,
-            #                                     press_delay=press_delay,
-            #                                     release_delay=release_delay)
-            #                 # break
-            #             elif hero_xywh[1] - material_box[1] >= hero_xywh[0] - material_box[0]:
-            #                 action_cache = move(direct="UP", material=True, action_cache=action_cache,
-            #                                     press_delay=press_delay,
-            #                                     release_delay=release_delay)
-            #                 # break
-            #         elif material_box[1] - hero_xywh[1] > 0 and material_box[0] - hero_xywh[0] < 0:
-            #             if abs(material_box[1] - hero_xywh[1]) < thy:
-            #                 action_cache = move(direct="LEFT", material=True, action_cache=action_cache,
-            #                                     press_delay=press_delay,
-            #                                     release_delay=release_delay)
-            #                 # break
-            #             elif material_box[1] - hero_xywh[1] < hero_xywh[0] - material_box[0]:
-            #                 action_cache = move(direct="LEFT_DOWN", material=True, action_cache=action_cache,
-            #                                     press_delay=press_delay,
-            #                                     release_delay=release_delay)
-            #                 # break
-            #             elif material_box[1] - hero_xywh[1] >= hero_xywh[0] - material_box[0]:
-            #                 action_cache = move(direct="DOWN", material=True, action_cache=action_cache,
-            #                                     press_delay=press_delay,
-            #                                     release_delay=release_delay)
-            #                 # break
-            #         elif material_box[1] - hero_xywh[1] > 0 and material_box[0] - hero_xywh[0] > 0:
-            #             if abs(material_box[1] - hero_xywh[1]) < thy:
-            #                 action_cache = move(direct="RIGHT", material=True, action_cache=action_cache,
-            #                                     press_delay=press_delay,
-            #                                     release_delay=release_delay)
-            #                 # break
-            #             elif material_box[1] - hero_xywh[1] < material_box[0] - hero_xywh[0]:
-            #                 action_cache = move(direct="RIGHT_DOWN", material=True, action_cache=action_cache,
-            #                                     press_delay=press_delay,
-            #                                     release_delay=release_delay)
-            #                 # break
-            #             elif material_box[1] - hero_xywh[1] >= material_box[0] - hero_xywh[0]:
-            #                 action_cache = move(direct="DOWN", material=True, action_cache=action_cache,
-            #                                     press_delay=press_delay,
-            #                                     release_delay=release_delay)
-            #                 # break
-            #     # 开箱子
-            #     if "box" in cls_object:
-            #         box_num = 0
-            #         for b in cls_object:
-            #             if b == "box":
-            #                 box_num += 1
-            #         if box_num >= 4:
-            #             directkeys.key_press("ESC")
-            #             print("打开箱子ESC")
-            #             # break62
-            #
-            #     # 重新开始
-            #     time_option = -20
-            #     if "options" in cls_object:
-            #         if not action_cache:
-            #             pass
-            #         elif action_cache not in ["LEFT", "RIGHT", "UP", "DOWN"]:
-            #             ReleaseKey(direct_dic[action_cache.strip().split("_")[0]])
-            #             ReleaseKey(direct_dic[action_cache.strip().split("_")[1]])
-            #             action_cache = None
-            #         else:
-            #             ReleaseKey(direct_dic[action_cache])
-            #             action_cache = None
-            #         if time.time() - time_option > 10:
-            #             directkeys.key_press("NUM0")
-            #             print("移动物品到脚下")
-            #             directkeys.key_press("X")
-            #             time_option = time.time()
-            #         directkeys.key_press("F2")
-            #         print("重新开始F2")
-            #         # break
+            break
+            if det is not None and len(det):
+                # Rescale boxes from img_size to im0 size
+                det[:, :4] = scale_coords(img.shape[2:], det[:, :4], img0.shape).round()
+
+                # Print results
+                for c in det[:, -1].unique():
+                    n = (det[:, -1] == c).sum()  # detections per class
+
+                img_object = []
+                cls_object = []
+                # Write results
+                hero_conf = 0
+                hero_index = 0
+                for idx, (*xyxy, conf, cls) in enumerate(reversed(det)):
+                    # if save_txt:  # Write to file
+                    #     xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4)) / gn).view(-1).tolist()  # normalized xywh
+                    #     with open(txt_path + '.txt', 'a') as f:
+                    #         f.write(('%g ' * 5 + '\n') % (cls, *xywh))  # label format
+
+                    xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4))).view(-1).tolist()
+                    cls = int(cls)
+                    img_object.append(xywh)
+                    cls_object.append(names[cls])
+
+                    if names[cls] == "hero" and conf > hero_conf:
+                        hero_conf = conf
+                        hero_index = idx
+
+                    if view_img:  # Add bbox to image
+                        label = '%s %.2f' % (names[int(cls)], conf)
+                        plot_one_box(xyxy, img0, label=label, color=colors[int(cls)], line_thickness=2)
+
+                # 游戏
+                thx = 30  # 捡东西时，x方向的阈值
+                thy = 30  # 捡东西时，y方向的阈值
+                attx = 150  # 攻击时，x方向的阈值
+                atty = 50  # 攻击时，y方向的阈值
+
+                if current_door(img0) == 1 and time.time() - door1_time_start > 10:
+                    door1_time_start = time.time()
+                    # move(direct="RIGHT", action_cache=action_cache, press_delay=press_delay,
+                    #      release_delay=release_delay)
+                    # ReleaseKey(direct_dic["RIGHT"])
+                    # directkeys.key_press("SPACE")
+                    directkeys.key_press("CTRL")
+                    time.sleep(1)
+                    directkeys.key_press("ALT")
+                    time.sleep(0.5)
+                    action_cache = None
+                # 扫描英雄
+                if "hero" in cls_object:
+                    # hero_xywh = img_object[cls_object.index("hero")]
+                    hero_xywh = img_object[hero_index]
+                    cv2.circle(img0, (int(hero_xywh[0]), int(hero_xywh[1])), 1, (0, 0, 255), 10)
+                    # print(hero_index)
+                    # print(cls_object.index("hero"))
+                else:
+                    continue
+                # 打怪
+                if "monster" in cls_object or "BOSS" in cls_object:
+                    min_distance = float("inf")
+                    for idx, (c, box) in enumerate(zip(cls_object, img_object)):
+                        if c == 'monster' or c == "BOSS":
+                            dis = ((hero_xywh[0] - box[0]) ** 2 + (hero_xywh[1] - box[1]) ** 2) ** 0.5
+                            if dis < min_distance:
+                                monster_box = box
+                                monster_index = idx
+                                min_distance = dis
+                    if abs(hero_xywh[0] - monster_box[0]) < attx and abs(hero_xywh[1] - monster_box[1]) < atty:
+                        if "BOSS" in cls_object:
+                            directkeys.key_press("R")
+                            directkeys.key_press("Q")
+                            # time.sleep(0.5)
+                            skill_name = skill_char[int(np.random.randint(len(skill_char), size=1)[0])]
+                            while True:
+                                if skill_rec(skill_name, img0):
+                                    directkeys.key_press(skill_name)
+                                    directkeys.key_press(skill_name)
+                                    directkeys.key_press(skill_name)
+                                    break
+                                else:
+                                    skill_name = skill_char[int(np.random.randint(len(skill_char), size=1)[0])]
+
+                        else:
+                            skill_name = skill_char[int(np.random.randint(len(skill_char), size=1)[0])]
+                            while True:
+                                if skill_rec(skill_name, img0):
+                                    directkeys.key_press(skill_name)
+                                    directkeys.key_press(skill_name)
+                                    directkeys.key_press(skill_name)
+                                    break
+                                else:
+                                    skill_name = skill_char[int(np.random.randint(len(skill_char), size=1)[0])]
+                        print("释放技能攻击")
+                        if not action_cache:
+                            pass
+                        elif action_cache not in ["LEFT", "RIGHT", "UP", "DOWN"]:
+                            ReleaseKey(direct_dic[action_cache.strip().split("_")[0]])
+                            ReleaseKey(direct_dic[action_cache.strip().split("_")[1]])
+                            action_cache = None
+                        elif action_cache:
+                            ReleaseKey(direct_dic[action_cache])
+                            action_cache = None
+                        # break
+                    elif monster_box[1] - hero_xywh[1] < 0 and monster_box[0] - hero_xywh[0] > 0:
+                        if abs(monster_box[1] - hero_xywh[1]) < thy:
+                            action_cache = move(direct="RIGHT", material=True, action_cache=action_cache,
+                                                press_delay=press_delay,
+                                                release_delay=release_delay)
+                            # break
+                        elif hero_xywh[1] - monster_box[1] < monster_box[0] - hero_xywh[0]:
+                            action_cache = move(direct="RIGHT_UP", material=True, action_cache=action_cache,
+                                                press_delay=press_delay,
+                                                release_delay=release_delay)
+                            # break
+                        elif hero_xywh[1] - monster_box[1] >= monster_box[0] - hero_xywh[0]:
+                            action_cache = move(direct="UP", material=True, action_cache=action_cache,
+                                                press_delay=press_delay,
+                                                release_delay=release_delay)
+                        # break
+                    elif monster_box[1] - hero_xywh[1] < 0 and monster_box[0] - hero_xywh[0] < 0:
+                        if abs(monster_box[1] - hero_xywh[1]) < thy:
+                            action_cache = move(direct="LEFT", material=True, action_cache=action_cache,
+                                                press_delay=press_delay,
+                                                release_delay=release_delay)
+                            # break
+                        elif hero_xywh[1] - monster_box[1] < hero_xywh[0] - monster_box[0]:
+                            action_cache = move(direct="LEFT_UP", material=True, action_cache=action_cache,
+                                                press_delay=press_delay,
+                                                release_delay=release_delay)
+                            # break
+                        elif hero_xywh[1] - monster_box[1] >= hero_xywh[0] - monster_box[0]:
+                            action_cache = move(direct="UP", material=True, action_cache=action_cache,
+                                                press_delay=press_delay,
+                                                release_delay=release_delay)
+                            # break
+                    elif monster_box[1] - hero_xywh[1] > 0 and monster_box[0] - hero_xywh[0] < 0:
+                        if abs(monster_box[1] - hero_xywh[1]) < thy:
+                            action_cache = move(direct="LEFT", material=True, action_cache=action_cache,
+                                                press_delay=press_delay,
+                                                release_delay=release_delay)
+                            # break
+                        elif monster_box[1] - hero_xywh[1] < hero_xywh[0] - monster_box[0]:
+                            action_cache = move(direct="LEFT_DOWN", material=True, action_cache=action_cache,
+                                                press_delay=press_delay,
+                                                release_delay=release_delay)
+                            # break
+                        elif monster_box[1] - hero_xywh[1] >= hero_xywh[0] - monster_box[0]:
+                            action_cache = move(direct="DOWN", material=True, action_cache=action_cache,
+                                                press_delay=press_delay,
+                                                release_delay=release_delay)
+                            # break
+                    elif monster_box[1] - hero_xywh[1] > 0 and monster_box[0] - hero_xywh[0] > 0:
+                        if abs(monster_box[1] - hero_xywh[1]) < thy:
+                            action_cache = move(direct="RIGHT", material=True, action_cache=action_cache,
+                                                press_delay=press_delay,
+                                                release_delay=release_delay)
+                            # break
+                        elif monster_box[1] - hero_xywh[1] < monster_box[0] - hero_xywh[0]:
+                            action_cache = move(direct="RIGHT_DOWN", material=True, action_cache=action_cache,
+                                                press_delay=press_delay,
+                                                release_delay=release_delay)
+                            # break
+                        elif monster_box[1] - hero_xywh[1] >= monster_box[0] - hero_xywh[0]:
+                            action_cache = move(direct="DOWN", material=True, action_cache=action_cache,
+                                                press_delay=press_delay,
+                                                release_delay=release_delay)
+                            # break
+
+                # 移动到下一个地图
+                if "door" in cls_object and "monster" not in cls_object and "BOSS" not in cls_object and "material" not in cls_object and "money" not in cls_object:
+                    for idx, (c, box) in enumerate(zip(cls_object, img_object)):
+                        if c == 'door':
+                            door_box = box
+                            door_index = idx
+                    if door_box[0] < img0.shape[0] // 2:
+                        action_cache = move(direct="RIGHT", action_cache=action_cache, press_delay=press_delay,
+                                            release_delay=release_delay)
+                        # break
+                    elif door_box[1] - hero_xywh[1] < 0 and door_box[0] - hero_xywh[0] > 0:
+                        if abs(door_box[1] - hero_xywh[1]) < thy and abs(door_box[0] - hero_xywh[0]) < thx:
+                            action_cache = None
+                            print("进入下一地图")
+                            # break
+                        elif abs(door_box[1] - hero_xywh[1]) < thy:
+                            action_cache = move(direct="RIGHT", action_cache=action_cache, press_delay=press_delay,
+                                                release_delay=release_delay)
+                            # break
+                        elif hero_xywh[1] - door_box[1] < door_box[0] - hero_xywh[0]:
+                            action_cache = move(direct="RIGHT_UP", action_cache=action_cache, press_delay=press_delay,
+                                                release_delay=release_delay)
+                            # break
+                        elif hero_xywh[1] - door_box[1] >= door_box[0] - hero_xywh[0]:
+                            action_cache = move(direct="UP", action_cache=action_cache, press_delay=press_delay,
+                                                release_delay=release_delay)
+                            # break
+                    elif door_box[1] - hero_xywh[1] < 0 and door_box[0] - hero_xywh[0] < 0:
+                        if abs(door_box[1] - hero_xywh[1]) < thy and abs(door_box[0] - hero_xywh[0]) < thx:
+                            action_cache = None
+                            print("进入下一地图")
+                            # break
+                        elif abs(door_box[1] - hero_xywh[1]) < thy:
+                            action_cache = move(direct="LEFT", action_cache=action_cache, press_delay=press_delay,
+                                                release_delay=release_delay)
+                            # break
+                        elif hero_xywh[1] - door_box[1] < hero_xywh[0] - door_box[0]:
+                            action_cache = move(direct="LEFT_UP", action_cache=action_cache, press_delay=press_delay,
+                                                release_delay=release_delay)
+                            # break
+                        elif hero_xywh[1] - door_box[1] >= hero_xywh[0] - door_box[0]:
+                            action_cache = move(direct="UP", action_cache=action_cache, press_delay=press_delay,
+                                                release_delay=release_delay)
+                            # break
+                    elif door_box[1] - hero_xywh[1] > 0 and door_box[0] - hero_xywh[0] < 0:
+                        if abs(door_box[1] - hero_xywh[1]) < thy and abs(door_box[0] - hero_xywh[0]) < thx:
+                            action_cache = None
+                            print("进入下一地图")
+                            # break
+                        elif abs(door_box[1] - hero_xywh[1]) < thy:
+                            action_cache = move(direct="LEFT", action_cache=action_cache, press_delay=press_delay,
+                                                release_delay=release_delay)
+                            # break
+                        elif door_box[1] - hero_xywh[1] < hero_xywh[0] - door_box[0]:
+                            action_cache = move(direct="LEFT_DOWN", action_cache=action_cache, press_delay=press_delay,
+                                                release_delay=release_delay)
+                            # break
+                        elif door_box[1] - hero_xywh[1] >= hero_xywh[0] - door_box[0]:
+                            action_cache = move(direct="DOWN", action_cache=action_cache, press_delay=press_delay,
+                                                release_delay=release_delay)
+                            # break
+                    elif door_box[1] - hero_xywh[1] > 0 and door_box[0] - hero_xywh[0] > 0:
+                        if abs(door_box[1] - hero_xywh[1]) < thy and abs(door_box[0] - hero_xywh[0]) < thx:
+                            action_cache = None
+                            print("进入下一地图")
+                            # break
+                        elif abs(door_box[1] - hero_xywh[1]) < thy:
+                            action_cache = move(direct="RIGHT", action_cache=action_cache, press_delay=press_delay,
+                                                release_delay=release_delay)
+                            # break
+                        elif door_box[1] - hero_xywh[1] < door_box[0] - hero_xywh[0]:
+                            action_cache = move(direct="RIGHT_DOWN", action_cache=action_cache, press_delay=press_delay,
+                                                release_delay=release_delay)
+                            # break
+                        elif door_box[1] - hero_xywh[1] >= door_box[0] - hero_xywh[0]:
+                            action_cache = move(direct="DOWN", action_cache=action_cache, press_delay=press_delay,
+                                                release_delay=release_delay)
+                            # break
+                if "money" not in cls_object and "material" not in cls_object and "monster" not in cls_object \
+                        and "BOSS" not in cls_object and "door" not in cls_object and 'box' not in cls_object \
+                        and 'options' not in cls_object:
+                    # if next_door(img0) == 0 and abs(time.time()) - next_door_time > 10:
+                    #     next_door_time = time.time()
+                    #     action_cache = move(direct="LEFT", action_cache=action_cache, press_delay=press_delay,
+                    #                         release_delay=release_delay)
+                    #     # time.sleep(3)
+                    # else:
+                    #     action_cache = move(direct="RIGHT", action_cache=action_cache, press_delay=press_delay,
+                    #                     release_delay=release_delay)
+
+                    action_cache = move(direct="RIGHT", action_cache=action_cache, press_delay=press_delay,
+                                        release_delay=release_delay)
+                    # break
+
+                # 捡材料
+                if "monster" not in cls_object and "hero" in cls_object and (
+                        "material" in cls_object or "money" in cls_object):
+                    min_distance = float("inf")
+                    hero_xywh[1] = hero_xywh[1] + (hero_xywh[3] // 2) * 0.7
+                    thx = thx / 2
+                    thy = thy / 2
+                    for idx, (c, box) in enumerate(zip(cls_object, img_object)):
+                        if c == 'material' or c == "money":
+                            dis = ((hero_xywh[0] - box[0]) ** 2 + (hero_xywh[1] - box[1]) ** 2) ** 0.5
+                            if dis < min_distance:
+                                material_box = box
+                                material_index = idx
+                                min_distance = dis
+                    if abs(material_box[1] - hero_xywh[1]) < thy and abs(material_box[0] - hero_xywh[0]) < thx:
+                        if not action_cache:
+                            pass
+                        elif action_cache not in ["LEFT", "RIGHT", "UP", "DOWN"]:
+                            ReleaseKey(direct_dic[action_cache.strip().split("_")[0]])
+                            ReleaseKey(direct_dic[action_cache.strip().split("_")[1]])
+                            action_cache = None
+                        else:
+                            ReleaseKey(direct_dic[action_cache])
+                            action_cache = None
+                        time.sleep(1)
+                        directkeys.key_press("X")
+                        print("捡东西")
+                        # break
+
+                    elif material_box[1] - hero_xywh[1] < 0 and material_box[0] - hero_xywh[0] > 0:
+
+                        if abs(material_box[1] - hero_xywh[1]) < thy:
+                            action_cache = move(direct="RIGHT", material=True, action_cache=action_cache,
+                                                press_delay=press_delay,
+                                                release_delay=release_delay)
+                            # break
+                        elif hero_xywh[1] - material_box[1] < material_box[0] - hero_xywh[0]:
+                            action_cache = move(direct="RIGHT_UP", material=True, action_cache=action_cache,
+                                                press_delay=press_delay,
+                                                release_delay=release_delay)
+                            # break
+                        elif hero_xywh[1] - material_box[1] >= material_box[0] - hero_xywh[0]:
+                            action_cache = move(direct="UP", material=True, action_cache=action_cache,
+                                                press_delay=press_delay,
+                                                release_delay=release_delay)
+                            # break
+                    elif material_box[1] - hero_xywh[1] < 0 and material_box[0] - hero_xywh[0] < 0:
+                        if abs(material_box[1] - hero_xywh[1]) < thy:
+                            action_cache = move(direct="LEFT", material=True, action_cache=action_cache,
+                                                press_delay=press_delay,
+                                                release_delay=release_delay)
+                            # break
+                        elif hero_xywh[1] - material_box[1] < hero_xywh[0] - material_box[0]:
+                            action_cache = move(direct="LEFT_UP", material=True, action_cache=action_cache,
+                                                press_delay=press_delay,
+                                                release_delay=release_delay)
+                            # break
+                        elif hero_xywh[1] - material_box[1] >= hero_xywh[0] - material_box[0]:
+                            action_cache = move(direct="UP", material=True, action_cache=action_cache,
+                                                press_delay=press_delay,
+                                                release_delay=release_delay)
+                            # break
+                    elif material_box[1] - hero_xywh[1] > 0 and material_box[0] - hero_xywh[0] < 0:
+                        if abs(material_box[1] - hero_xywh[1]) < thy:
+                            action_cache = move(direct="LEFT", material=True, action_cache=action_cache,
+                                                press_delay=press_delay,
+                                                release_delay=release_delay)
+                            # break
+                        elif material_box[1] - hero_xywh[1] < hero_xywh[0] - material_box[0]:
+                            action_cache = move(direct="LEFT_DOWN", material=True, action_cache=action_cache,
+                                                press_delay=press_delay,
+                                                release_delay=release_delay)
+                            # break
+                        elif material_box[1] - hero_xywh[1] >= hero_xywh[0] - material_box[0]:
+                            action_cache = move(direct="DOWN", material=True, action_cache=action_cache,
+                                                press_delay=press_delay,
+                                                release_delay=release_delay)
+                            # break
+                    elif material_box[1] - hero_xywh[1] > 0 and material_box[0] - hero_xywh[0] > 0:
+                        if abs(material_box[1] - hero_xywh[1]) < thy:
+                            action_cache = move(direct="RIGHT", material=True, action_cache=action_cache,
+                                                press_delay=press_delay,
+                                                release_delay=release_delay)
+                            # break
+                        elif material_box[1] - hero_xywh[1] < material_box[0] - hero_xywh[0]:
+                            action_cache = move(direct="RIGHT_DOWN", material=True, action_cache=action_cache,
+                                                press_delay=press_delay,
+                                                release_delay=release_delay)
+                            # break
+                        elif material_box[1] - hero_xywh[1] >= material_box[0] - hero_xywh[0]:
+                            action_cache = move(direct="DOWN", material=True, action_cache=action_cache,
+                                                press_delay=press_delay,
+                                                release_delay=release_delay)
+                            # break
+                # 开箱子
+                if "box" in cls_object:
+                    box_num = 0
+                    for b in cls_object:
+                        if b == "box":
+                            box_num += 1
+                    if box_num >= 4:
+                        directkeys.key_press("ESC")
+                        print("打开箱子ESC")
+                        # break62
+
+                # 重新开始
+                time_option = -20
+                if "options" in cls_object:
+                    if not action_cache:
+                        pass
+                    elif action_cache not in ["LEFT", "RIGHT", "UP", "DOWN"]:
+                        ReleaseKey(direct_dic[action_cache.strip().split("_")[0]])
+                        ReleaseKey(direct_dic[action_cache.strip().split("_")[1]])
+                        action_cache = None
+                    else:
+                        ReleaseKey(direct_dic[action_cache])
+                        action_cache = None
+                    if time.time() - time_option > 10:
+                        directkeys.key_press("NUM0")
+                        print("移动物品到脚下")
+                        directkeys.key_press("X")
+                        time_option = time.time()
+                    directkeys.key_press("F2")
+                    print("重新开始F2")
+                    # break
             t_end = time.time()
             print("一帧游戏操作所用时间：", (t_end - t_start) / fs)
 

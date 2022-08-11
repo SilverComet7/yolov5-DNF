@@ -3,7 +3,8 @@ from bs4 import BeautifulSoup
 import json
 import re
 
-def getHomeStoreModulDict():
+# 获取微信读书全局js存储模块
+def getHomeStoreModule():
     response = requests.get('https://weread.qq.com/web/category/')
     begin = 'window.__INITIAL_STATE__='
     end = ';(function'
@@ -14,5 +15,4 @@ def getHomeStoreModulDict():
     result = re.match(pattern, r)
     text = result.group()[len(begin):-len(end)]
     dict_data = json.loads(text)
-    # print(dict_data['homeStoreModule'])
     return dict_data['homeStoreModule']
