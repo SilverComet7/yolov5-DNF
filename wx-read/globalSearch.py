@@ -3,9 +3,17 @@ import time
 import random
 import requests
 import redis
+import pymongo
 
-searchKeyWord = 'opencv'
+searchKeyWord = 'unity'
 client = redis.StrictRedis()
+
+
+def mongodbWrite(collectName, bookInfo):
+    client = pymongo.MongoClient()
+    dataBase = client['booksInfo']
+    collect = dataBase[collectName]
+    collect.insert_many(bookInfo)
 
 
 def sortWay(book):
@@ -19,6 +27,7 @@ def getWXBooks(queryPath):
     maxIdx = 0
     bookList = []
     hasMore = 1
+    totalCount = 0
     while hasMore:
         # maxIdx = i * 20  # example: i = 20 时候出现错误中断了(反爬触发，断电等) 记录到redis 后续继续从 i=20开始
         rTime = random.randint(1, 3)  # 随机延迟，从1到3内取一个整数值
@@ -26,7 +35,8 @@ def getWXBooks(queryPath):
         res = requests.get(
             queryPath, params={'maxIdx': maxIdx, 'keyword': searchKeyWord, 'fragmentSize': 120, 'count': 20})
         books = res.json()['books']
-        totalCount = res.json()['totalCount']
+        if not totalCount:
+            totalCount = res.json()['totalCount']
         if len(books):
             for book in books:
                 # bookTitle = book['bookInfo']['title']
@@ -44,11 +54,11 @@ def getWXBooks(queryPath):
         # })
 
     # bookList.sort(key=sortWay, reverse=True)
-    writeCSV(bookList, r'globalSearchInfo\{searchKeyWord}-{totalCount}.csv'.format(searchKeyWord=searchKeyWord,
-                                                                                   totalCount=totalCount))
+    # writeCSV(bookList, r'globalSearchInfo\{searchKeyWord}-{totalCount}.csv'.format(searchKeyWord=searchKeyWord,
+    #                                                                              totalCount=totalCount))
     # mongodb 记录
     return bookList
 
 
-getWXBooks('https://weread.qq.com/web/search/global')
-print(1 in set({1, 1, 2}))
+books = getWXBooks('https://weread.qq.com/web/search/global')
+mongodbWrite(searchKeyWord, books)

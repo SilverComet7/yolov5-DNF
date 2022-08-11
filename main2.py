@@ -12,8 +12,8 @@ from utils.general import (
     xyxy2xywh, xywh2xyxy, plot_one_box, strip_optimizer, set_logging)
 from models.experimental import attempt_load
 from direction_move import move
-from small_recgonize import current_door, next_door
-from skill_recgnize import skill_rec
+# from small_recgonize import current_door, next_door
+# from skill_recgnize import skill_rec
 import random
 
 
@@ -79,10 +79,10 @@ door1_time_start = -20
 next_door_time = -20
 fs = 1  # 每四帧处理一次
 
-# 倒计时
-for i in list(range(5))[::-1]:
-    print(i + 1)
-    time.sleep(1)
+# # 倒计时
+# for i in list(range(5))[::-1]:
+#     print(i + 1)
+#     time.sleep(1)
 
 # 捕捉画面+目标检测+玩游戏
 while True:
@@ -92,7 +92,9 @@ while True:
         frame += 1
         if frame % fs == 0:
             # img0 = cv2.imread("datasets/guiqi/yolo5_datasets/imgs/1004_14.jpg")
+
             img0 = cv2.cvtColor(img0, cv2.COLOR_BGRA2BGR)
+
             # Padded resize
             img = letterbox(img0, new_shape=img_size)[0]
 
@@ -110,6 +112,7 @@ while True:
             det = non_max_suppression(pred, conf_thres, iou_thres, classes=classes, agnostic=agnostic_nms)
             gn = torch.tensor(img0.shape)[[1, 0, 1, 0]]
             det = det[0]
+            print(det)
             break
             if det is not None and len(det):
                 # Rescale boxes from img_size to im0 size
