@@ -1,18 +1,18 @@
-import numpy as np
-from grabscreen import grab_screen
-import cv2
-import time
-import directkeys
-import torch
-from torch.autograd import Variable
-from directkeys import PressKey, ReleaseKey, key_down, key_up
-from getkeys import key_check
-from utils.torch_utils import select_device, load_classifier, time_synchronized
-from utils.general import (
-    check_img_size, non_max_suppression, apply_classifier, scale_coords,
-    xyxy2xywh, plot_one_box, strip_optimizer, set_logging)
-from models.experimental import attempt_load
 import random
+import time
+
+import cv2
+import numpy as np
+import torch
+
+from getkeys import key_check
+from grabscreen import grab_screen
+from models.experimental import attempt_load
+from utils.general import (
+    non_max_suppression, scale_coords,
+    plot_one_box)
+from utils.torch_utils import time_synchronized
+
 
 def letterbox(img, new_shape=(640, 640), color=(114, 114, 114), auto=False, scaleFill=False, scaleup=True):
     # Resize image to a 32-pixel-multiple rectangle https://github.com/ultralytics/yolov3/issues/232

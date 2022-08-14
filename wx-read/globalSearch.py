@@ -1,9 +1,9 @@
-from bookTypeSearch import writeCSV
-import time
 import random
-import requests
-import redis
+import time
+
 import pymongo
+import redis
+import requests
 
 searchKeyWord = 'unity'
 client = redis.StrictRedis()

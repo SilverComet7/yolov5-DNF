@@ -4,10 +4,10 @@ import math
 import os
 import platform
 import random
+import re
 import shutil
 import subprocess
 import time
-import re
 from contextlib import contextmanager
 from copy import copy
 from pathlib import Path
@@ -22,8 +22,8 @@ import yaml
 from scipy.cluster.vq import kmeans
 from scipy.signal import butter, filtfilt
 from tqdm import tqdm
-
 from utils.google_utils import gsutil_getsize
+
 from utils.torch_utils import is_parallel, init_torch_seeds
 
 # Set printoptions

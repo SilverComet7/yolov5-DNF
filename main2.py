@@ -1,19 +1,21 @@
-import numpy as np
-from grabscreen import grab_screen
-import cv2
-import time
-import directkeys
-import torch
-from directkeys import PressKey, ReleaseKey, key_down, key_up
-from getkeys import key_check
-from utils.general import (
-    check_img_size, non_max_suppression, apply_classifier, scale_coords,
-    xyxy2xywh, xywh2xyxy, strip_optimizer, set_logging, plot_one_box)
-from models.experimental import attempt_load
-from direction_move import move
-from small_recgonize import current_door, next_door
-from skill_recgnize import skill_rec
 import random
+import time
+
+import cv2
+import numpy as np
+import torch
+
+import directkeys
+from direction_move import move
+from directkeys import ReleaseKey
+from getkeys import key_check
+from grabscreen import grab_screen
+from models.experimental import attempt_load
+# from skill_recgnize import skill_rec
+from small_recgonize import current_door
+from utils.general import (
+    non_max_suppression, scale_coords,
+    xyxy2xywh)
 
 
 def letterbox(img, new_shape=(640, 640), color=(114, 114, 114), auto=False, scaleFill=False, scaleup=True):
@@ -53,7 +55,6 @@ def letterbox(img, new_shape=(640, 640), color=(114, 114, 114), auto=False, scal
 weights = r'resource\best.pt'  # yolo5 模型存放的位置
 device = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
 model = attempt_load(weights, map_location=device)  # load FP32 model
-dir(model)
 window_size = (0, 0, 1280, 800)  # 截屏的位置
 img_size = 640  # 输入到yolo5中的模型尺寸
 paused = False
@@ -78,10 +79,19 @@ door1_time_start = -20
 next_door_time = -20
 fs = 1  # 每四帧处理一次
 
-# # 倒计时
-# for i in list(range(5))[::-1]:
-#     print(i + 1)
-#     time.sleep(1)
+
+def plot_one_box(x, img, color=None, label=None, line_thickness=None):
+    # Plots one bounding box on image img
+    tl = line_thickness or round(0.002 * (img.shape[0] + img.shape[1]) / 2) + 1  # line/font thickness
+    color = color or [random.randint(0, 255) for _ in range(3)]
+    c1, c2 = (int(x[0]), int(x[1])), (int(x[2]), int(x[3]))
+    cv2.rectangle(img, c1, c2, color, thickness=tl, lineType=cv2.LINE_AA)
+    if label:
+        tf = max(tl - 1, 1)  # font thickness
+        t_size = cv2.getTextSize(label, 0, fontScale=tl / 3, thickness=tf)[0]
+        c2 = c1[0] + t_size[0], c1[1] - t_size[1] - 3
+        cv2.rectangle(img, c1, c2, color, -1, cv2.LINE_AA)  # filled
+        cv2.putText(img, label, (c1[0], c1[1] - 2), 0, tl / 3, [225, 255, 255], thickness=tf, lineType=cv2.LINE_AA)
 
 
 # 捕捉画面+目标检测+玩游戏
@@ -91,29 +101,26 @@ while True:
         img0 = grab_screen(window_size)
         frame += 1
         if frame % fs == 0:
-            # img0 = cv2.imread("test/shiwu.jpg")
 
             img = cv2.cvtColor(img0, cv2.COLOR_BGRA2BGR)
 
             # Padded resize
             # img = letterbox(img0, new_shape=img_size)[0]
 
-
             # Convert
             img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB
             img = np.ascontiguousarray(img)
 
             img = torch.from_numpy(img).to(device).unsqueeze(dim=0)
-            # img = img.half() if half else img.float()  # uint8 to fp16/32
-            # img /= 255.0  # 0 - 255 to 0.0 - 1.0
+            img = img.half() if half else img.float()  # uint8 to fp16/32
+            img /= 255.0  # 0 - 255 to 0.0 - 1.0
 
-
-            pred = model(img.to(torch.float32), augment=False)[0]
+            pred = model(img, augment=False)[0]
 
             # Apply NMS
             det = non_max_suppression(pred, conf_thres, iou_thres, classes=classes, agnostic=agnostic_nms)
             gn = torch.tensor(img0.shape)[[1, 0, 1, 0]]
-            det = det[0]  # 所有的检测到的目标
+            det = det[0]  # 所有的检测到的目标wqewq
 
             if det is not None and len(det):
                 # Rescale boxes from img_size to im0 size
@@ -135,7 +142,7 @@ while True:
                     #     with open(txt_path + '.txt', 'a') as f:
                     #         f.write(('%g ' * 5 + '\n') % (cls, *xywh))  # label format
 
-                    #转换xywh形式，方便计算距离
+                    # 转换xywh形式，方便计算距离
                     xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4))).view(-1).tolist()
                     cls = int(cls)
                     img_object.append(xywh)
@@ -185,30 +192,31 @@ while True:
                                 monster_box = box
                                 monster_index = idx
                                 min_distance = dis
+                    # 处于攻击距离
                     if abs(hero_xywh[0] - monster_box[0]) < attx and abs(hero_xywh[1] - monster_box[1]) < atty:
-                        if "BOSS" in cls_object:
-                            directkeys.key_press("R")
-                            directkeys.key_press("Q")
-                            # time.sleep(0.5)
-                            skill_name = skill_char[int(np.random.randint(len(skill_char), size=1)[0])]
-                            while True:
-                                if skill_rec(skill_name, img0):
-                                    directkeys.key_press(skill_name)
-                                    directkeys.key_press(skill_name)
-                                    directkeys.key_press(skill_name)
-                                    break
-                                else:
-                                    skill_name = skill_char[int(np.random.randint(len(skill_char), size=1)[0])]
-                        else:
-                            skill_name = skill_char[int(np.random.randint(len(skill_char), size=1)[0])]
-                            while True:
-                                if skill_rec(skill_name, img0):
-                                    directkeys.key_press(skill_name)
-                                    directkeys.key_press(skill_name)
-                                    directkeys.key_press(skill_name)
-                                    break
-                                else:
-                                    skill_name = skill_char[int(np.random.randint(len(skill_char), size=1)[0])]
+                        directkeys.key_press("A")
+                        # if "BOSS" in cls_object:
+                        #     directkeys.key_press("A")
+                        #
+                        #     skill_name = skill_char[int(np.random.randint(len(skill_char), size=1)[0])]
+                        #     while True:
+                        #         if skill_rec(skill_name, img0):
+                        #             directkeys.key_press(skill_name)
+                        #             directkeys.key_press(skill_name)
+                        #             directkeys.key_press(skill_name)
+                        #             break
+                        #         else:
+                        #             skill_name = skill_char[int(np.random.randint(len(skill_char), size=1)[0])]
+                        # else:
+                        #     skill_name = skill_char[int(np.random.randint(len(skill_char), size=1)[0])]
+                        #     while True:
+                        #         if skill_rec(skill_name, img0):
+                        #             directkeys.key_press(skill_name)
+                        #             directkeys.key_press(skill_name)
+                        #             directkeys.key_press(skill_name)
+                        #             break
+                        #         else:
+                        #             skill_name = skill_char[int(np.random.randint(len(skill_char), size=1)[0])]
                         print("释放技能攻击")
                         if not action_cache:
                             pass
@@ -220,12 +228,15 @@ while True:
                             ReleaseKey(direct_dic[action_cache])
                             action_cache = None
                         # break
+                    # 怪物在英雄右上  ， 左上     左下   右下
                     elif monster_box[1] - hero_xywh[1] < 0 and monster_box[0] - hero_xywh[0] > 0:
+                        # y方向 小于攻击距离
                         if abs(monster_box[1] - hero_xywh[1]) < thy:
                             action_cache = move(direct="RIGHT", material=True, action_cache=action_cache,
                                                 press_delay=press_delay,
                                                 release_delay=release_delay)
                             # break
+                        #
                         elif hero_xywh[1] - monster_box[1] < monster_box[0] - hero_xywh[0]:
                             action_cache = move(direct="RIGHT_UP", material=True, action_cache=action_cache,
                                                 press_delay=press_delay,

@@ -1,7 +1,9 @@
-import requests
-from bs4 import BeautifulSoup
 import json
 import re
+
+import requests
+from bs4 import BeautifulSoup
+
 
 # 获取微信读书全局js存储模块
 def getHomeStoreModule():

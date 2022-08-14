@@ -1,11 +1,12 @@
 import cv2
 import numpy as np
 import torch
+from directkeys import key_press
+from grabscreen import grab_screen
+
 from models.experimental import attempt_load
 from utils.general import non_max_suppression, xyxy2xywh
-from grabscreen import grab_screen
-from directkeys import key_press
-from direction_move import move
+
 names = ['person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'train', 'truck', 'boat', 'traffic light',
         'fire hydrant', 'stop sign', 'parking meter', 'bench', 'bird', 'cat', 'dog', 'horse', 'sheep', 'cow',
         'elephant', 'bear', 'zebra', 'giraffe', 'backpack', 'umbrella', 'handbag', 'tie', 'suitcase', 'frisbee',

@@ -1,10 +1,10 @@
 # This file contains modules common to various models
 import math
-import warnings
 
 import torch
 import torch.nn as nn
 from torch.nn import functional as F
+
 from utils.general import non_max_suppression
 
 

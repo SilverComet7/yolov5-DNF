@@ -1,5 +1,5 @@
-import numpy as np
 import cv2
+import numpy as np
 
 # -----------蓝色通道值--------------
 blue = np.zeros((300, 300, 3), dtype=np.uint8)

@@ -1,5 +1,6 @@
-from multiprocessing.dummy import Pool
 import time
+from multiprocessing.dummy import Pool
+
 import requests
 
 

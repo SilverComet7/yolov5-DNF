@@ -1,5 +1,4 @@
 import win32api as wapi
-import time
 
 dict = {"A": 0, "S": 1,"D": 2, "F": 3, "G": 4, "H": 5, "Q": 6, "W": 7, "E": 8, "R": 9, "T": 10, "Y": 11, "up": 12,
         "down": 13, "left": 14, "right":15, "ctrl": 16, "alt": 17, "Z":18, "X":19, "C": 20, "esc": 21, "f2": 22,

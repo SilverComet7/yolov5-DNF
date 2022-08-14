@@ -5,14 +5,13 @@ Created on Wed Apr  8 09:45:04 2020
 @author: analoganddigital   ( GitHub )
 """
 
-import numpy as np
-from PIL import ImageGrab
-import cv2
-import time
-import directkeys
-import grabscreen
-import getkeys
 import os
+import time
+
+import cv2
+
+import getkeys
+import grabscreen
 
 wait_time = 5
 L_t = 3

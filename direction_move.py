@@ -1,5 +1,6 @@
 import time
-from directkeys import PressKey, ReleaseKey, key_down, key_up
+
+from directkeys import PressKey, ReleaseKey
 
 direct_dic = {"UP": 0xC8, "DOWN": 0xD0, "LEFT": 0xCB, "RIGHT": 0xCD}
 

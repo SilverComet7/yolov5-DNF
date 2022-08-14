@@ -1,10 +1,12 @@
-import time
-import random
-import requests
 import csv
 import os
-from getHomeStoreModul import getHomeStoreModule
+import random
+import time
 from concurrent.futures import ThreadPoolExecutor
+
+import requests
+
+from getHomeStoreModul import getHomeStoreModule
 
 # 不重复，完整性，可续接爬取，存储数据库或CSV记录
 
