@@ -3,9 +3,8 @@ import cv2
 import numpy as np
 import torch
 import time
-
 import directkeys
-from directkeys import (key_press, ReleaseKey,PressKey)
+from directkeys import (key_press, ReleaseKey, PressKey)
 from direction_move import move
 from grabscreen import grab_screen
 from models.experimental import attempt_load
@@ -47,10 +46,11 @@ def plot_one_box(x, img, color=None, label=None, line_thickness=None):
 
 
 while True:
+
     if not paused:
         frame += 1
         if frame % fs == 0:
-            img0 = grab_screen((0, 0, 1280, 800))
+            img0 = grab_screen((0, 0, 1200, 900))
 
             img = cv2.cvtColor(img0, cv2.COLOR_BGRA2BGR)
             img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB
@@ -59,7 +59,7 @@ while True:
             img = img.half() if half else img.float()  # uint8 to fp16/32~
             img /= 255.0  # 0 - 255 to 0.0 - 1.0
 
-            pred = model(img,augment=False)[0]
+            pred = model(img, augment=False)[0]
             # Apply NMS
             det = non_max_suppression(pred, conf_thres, iou_thres, classes=classes, agnostic=agnostic_nms)
             gn = torch.tensor(img0.shape)[[1, 0, 1, 0]]
@@ -93,70 +93,77 @@ while True:
                 else:
                     continue
                 # 对屏幕中的monster 进行平均  最终一个
-                print(cls_object)
                 if 'monster' in cls_object:
                     min_distance = float("inf")
                     # 遍历屏幕上的所有怪，找到距离最小的那个怪
                     for idx, (c, box) in enumerate(zip(cls_object, img_object)):
-                        print(c, box)
+                        print(c)
+                        if c == 'hero': continue
                         dis = ((hero_xywh[0] - box[0]) ** 2 + (hero_xywh[1] - box[1]) ** 2) ** 0.5
                         print(dis)
                         if dis < min_distance:
                             monster_box = box
                             monster_index = idx
                             min_distance = dis
-                    print(abs(hero_xywh[0] - monster_box[0]),hero_xywh[1] - monster_box[1])
+                    print(hero_xywh, monster_box)
+                    print(abs(hero_xywh[0] - monster_box[0]), hero_xywh[1] - monster_box[1])
                     if abs(hero_xywh[0] - monster_box[0]) < attx and abs(hero_xywh[1] - monster_box[1]) < atty:
                         print('准备攻击 , a')
-                        directkeys.key_press('A')
-                        directkeys.PressKey(0x1E)
+                        # pydirectinput.press('a')
+                        # directkeys.key_press('A')
+                        directkeys.key_press("A")
+                        if not action_cache:
+                            pass
+                        elif action_cache not in ["LEFT", "RIGHT", "UP", "DOWN"]:
+                            ReleaseKey(direct_dic[action_cache.strip().split("_")[0]])
+                            ReleaseKey(direct_dic[action_cache.strip().split("_")[1]])
+                            action_cache = None
+                        elif action_cache:
+                            ReleaseKey(direct_dic[action_cache])
+                            action_cache = None
                     elif abs(hero_xywh[0] - monster_box[0]) < attx and abs(hero_xywh[1] - monster_box[1]) > atty:
-                        print('准备移动')
                         if hero_xywh[1] - monster_box[1] < 0:
-                            move('UP', material=False, action_cache=None )
+                            action_cache = move('DOWN', material=False, action_cache=None)
                         else:
-                            move('DOWN', material=False, action_cache=None )
+                            action_cache = move('UP', material=False, action_cache=None)
                     elif abs(hero_xywh[0] - monster_box[0]) > attx and abs(hero_xywh[1] - monster_box[1]) < atty:
-                        print('准备移动')
                         if hero_xywh[0] - monster_box[0] < 0:
-                            move('RIGHT', material=False, action_cache=None )
+                            action_cache = move('RIGHT', material=False, action_cache=None)
                         else:
-                            move('LEFT', material=False, action_cache=None )
+                            action_cache = move('LEFT', material=False, action_cache=None)
                     elif abs(hero_xywh[0] - monster_box[0]) > attx and abs(hero_xywh[1] - monster_box[1]) > atty:
-                        print('准备移动')
                         if hero_xywh[0] - monster_box[0] < 0 and hero_xywh[1] - monster_box[1] < 0:
-                            move('RIGHT_UP', material=False, action_cache=None )
+                            action_cache = move('RIGHT_UP', material=False, action_cache=None)
                         elif hero_xywh[0] - monster_box[0] < 0 and hero_xywh[1] - monster_box[1] > 0:
-                            move('RIGHT_DOWN', material=False, action_cache=None )
+                            action_cache = move('RIGHT_DOWN', material=False, action_cache=None)
                         elif hero_xywh[0] - monster_box[0] > 0 and hero_xywh[1] - monster_box[1] < 0:
-                            move('LEFT_UP', material=False, action_cache=None )
+                            action_cache = move('LEFT_UP', material=False, action_cache=None)
                         elif hero_xywh[0] - monster_box[0] > 0 and hero_xywh[1] - monster_box[1] > 0:
-                            move('LEFT_DOWN', material=False, action_cache=None )
+                            action_cache = move('LEFT_DOWN', material=False, action_cache=None)
                 elif 'boss' in cls_object:
-                    # 打boss
-                    key_press('a')
+                    print('攻击boss')
+                    # action_cache =  key_press('A')
                 else:
                     print('没有识别到任何有效目标,去下一个门')
+            img0 = cv2.resize(img0, (600, 375))
             if view_img:
                 cv2.imshow('window', img0)
-                # cv2.waitKey(0)
-                # cv2.destroyAllWindows()
                 if cv2.waitKey(5) & 0xFF == ord('q'):
                     raise StopIteration
-        keys = key_check()
-        if 'P' in keys:
-            if not action_cache:
-                pass
-            elif action_cache not in ["LEFT", "RIGHT", "UP", "DOWN"]:
-                ReleaseKey(direct_dic[action_cache.strip().split("_")[0]])
-                ReleaseKey(direct_dic[action_cache.strip().split("_")[1]])
-                action_cache = None
-            else:
-                ReleaseKey(direct_dic[action_cache])
-                action_cache = None
-            if paused:
-                paused = False
-                time.sleep(1)
-            else:
-                paused = True
-                time.sleep(1)
+    keys = key_check()
+    if 'P' in keys:
+        if not action_cache:
+            pass
+        elif action_cache not in ["LEFT", "RIGHT", "UP", "DOWN"]:
+            ReleaseKey(direct_dic[action_cache.strip().split("_")[0]])
+            ReleaseKey(direct_dic[action_cache.strip().split("_")[1]])
+            action_cache = None
+        else:
+            ReleaseKey(direct_dic[action_cache])
+            action_cache = None
+        if paused:
+            paused = False
+            time.sleep(1)
+        else:
+            paused = True
+            time.sleep(1)

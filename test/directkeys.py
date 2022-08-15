@@ -43,6 +43,9 @@ def key_press(key):
     key_up(key)
     time.sleep(0.01)
 
+
+# def mouse_event
+
 ####################################
 import ctypes
 import time

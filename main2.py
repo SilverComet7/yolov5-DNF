@@ -302,6 +302,7 @@ while True:
                         if c == 'door':
                             door_box = box
                             door_index = idx
+                    # 门的位置小于抓取的一半，在左侧
                     if door_box[0] < img0.shape[0] // 2:
                         action_cache = move(direct="RIGHT", action_cache=action_cache, press_delay=press_delay,
                                             release_delay=release_delay)
@@ -386,6 +387,7 @@ while True:
                     #     action_cache = move(direct="RIGHT", action_cache=action_cache, press_delay=press_delay,
                     #                     release_delay=release_delay)
 
+                    #没有识别到 则向右走
                     action_cache = move(direct="RIGHT", action_cache=action_cache, press_delay=press_delay,
                                         release_delay=release_delay)
                     # break
