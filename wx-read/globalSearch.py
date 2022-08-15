@@ -5,7 +5,7 @@ import pymongo
 import redis
 import requests
 
-searchKeyWord = 'unity'
+serarchWordList = ['unity', 'vue', '逆向','爬虫','机器学习']
 client = redis.StrictRedis()
 
 
@@ -17,11 +17,11 @@ def mongodbWrite(collectName, bookInfo):
 
 
 def sortWay(book):
-    print(book)
     return book['bookInfo']['newRating']
 
 
-def getWXBooks(queryPath,searchWord):
+def getWXBooks(queryPath, searchWord):
+    # todo redis
     # booksTitleSet = client.hget(searchKeyWord, 'booksTitleSet') or set()
     # maxIdx = int(client.hget(searchKeyWord, 'maxIdx')) if client.hget(searchKeyWord, 'maxIdx') is not None else 0
     maxIdx = 0
@@ -60,5 +60,7 @@ def getWXBooks(queryPath,searchWord):
     return bookList
 
 
-books = getWXBooks('https://weread.qq.com/web/search/global',searchKeyWord)
-mongodbWrite(searchKeyWord, books)
+if __name__ == '__main__':
+    for i in serarchWordList:
+        books = getWXBooks('https://weread.qq.com/web/search/global', i)
+        mongodbWrite(i, books)
