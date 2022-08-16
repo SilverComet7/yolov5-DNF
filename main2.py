@@ -307,6 +307,7 @@ while True:
                         action_cache = move(direct="RIGHT", action_cache=action_cache, press_delay=press_delay,
                                             release_delay=release_delay)
                         # break
+                    # 门在右下方
                     elif door_box[1] - hero_xywh[1] < 0 and door_box[0] - hero_xywh[0] > 0:
                         if abs(door_box[1] - hero_xywh[1]) < thy and abs(door_box[0] - hero_xywh[0]) < thx:
                             action_cache = None
@@ -324,6 +325,7 @@ while True:
                             action_cache = move(direct="UP", action_cache=action_cache, press_delay=press_delay,
                                                 release_delay=release_delay)
                             # break
+                    # 门在右上方
                     elif door_box[1] - hero_xywh[1] < 0 and door_box[0] - hero_xywh[0] < 0:
                         if abs(door_box[1] - hero_xywh[1]) < thy and abs(door_box[0] - hero_xywh[0]) < thx:
                             action_cache = None
@@ -341,6 +343,7 @@ while True:
                             action_cache = move(direct="UP", action_cache=action_cache, press_delay=press_delay,
                                                 release_delay=release_delay)
                             # break
+                    # 门在左下方
                     elif door_box[1] - hero_xywh[1] > 0 and door_box[0] - hero_xywh[0] < 0:
                         if abs(door_box[1] - hero_xywh[1]) < thy and abs(door_box[0] - hero_xywh[0]) < thx:
                             action_cache = None
@@ -358,6 +361,7 @@ while True:
                             action_cache = move(direct="DOWN", action_cache=action_cache, press_delay=press_delay,
                                                 release_delay=release_delay)
                             # break
+                    # 门在左上方
                     elif door_box[1] - hero_xywh[1] > 0 and door_box[0] - hero_xywh[0] > 0:
                         if abs(door_box[1] - hero_xywh[1]) < thy and abs(door_box[0] - hero_xywh[0]) < thx:
                             action_cache = None

@@ -45,12 +45,14 @@ def plot_one_box(x, img, color=None, label=None, line_thickness=None):
         cv2.putText(img, label, (c1[0], c1[1] - 2), 0, tl / 3, [225, 255, 255], thickness=tf, lineType=cv2.LINE_AA)
 
 
+yamlDoorDirection = ['RIGHT', 'RIGHT', 'UP', 'RIGHT']
+
 while True:
 
     if not paused:
         frame += 1
         if frame % fs == 0:
-            img0 = grab_screen((0, 0, 1200, 900))
+            img0 = grab_screen((0, 0, 1280, 960))
 
             img = cv2.cvtColor(img0, cv2.COLOR_BGRA2BGR)
             img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB
@@ -59,7 +61,7 @@ while True:
             img = img.half() if half else img.float()  # uint8 to fp16/32~
             img /= 255.0  # 0 - 255 to 0.0 - 1.0
 
-            pred = model(img, augment=False)[0]
+            pred = model(img)[0]
             # Apply NMS
             det = non_max_suppression(pred, conf_thres, iou_thres, classes=classes, agnostic=agnostic_nms)
             gn = torch.tensor(img0.shape)[[1, 0, 1, 0]]
@@ -81,19 +83,21 @@ while True:
                         label = '%s %.2f' % (names[int(cls)], conf)
                         plot_one_box(xyxy, img0, label=label, color=colors[int(cls)], line_thickness=2)
                     # 游戏
-                thx = 30  # 捡东西时，x方向的阈值
-                thy = 30  # 捡东西时，y方向的阈值
+                thx = 30  # 捡东西，进门，x方向的阈值
+                thy = 30  # 捡东西，进门，y方向的阈值
                 attx = 150  # 攻击时，x方向的阈值
                 atty = 50  # 攻击时，y方向的阈值
-                skillDis = 800
-                skillDis = 400
+                # skillDis = 800
+                # skillDis = 400
+                thisDirectionIndex = 0
 
                 if 'hero' in cls_object:
                     hero_xywh = img_object[hero_index]
                 else:
                     continue
-                # 对屏幕中的monster 进行平均  最终一个
+
                 if 'monster' in cls_object:
+                    # 对屏幕中的monster 进行平均
                     min_distance = float("inf")
                     # 遍历屏幕上的所有怪，找到距离最小的那个怪
                     for idx, (c, box) in enumerate(zip(cls_object, img_object)):
@@ -106,13 +110,9 @@ while True:
                             monster_index = idx
                             min_distance = dis
                     print(hero_xywh, monster_box)
-                    print(abs(hero_xywh[0] - monster_box[0]), hero_xywh[1] - monster_box[1])
                     if abs(hero_xywh[0] - monster_box[0]) < attx and abs(hero_xywh[1] - monster_box[1]) < atty:
-                        print('准备攻击 , a')
-                        # pydirectinput.press('a')
-                        # directkeys.key_press('A')
-                        directkeys.key_press("A")
                         if not action_cache:
+                            directkeys.key_press("A")
                             pass
                         elif action_cache not in ["LEFT", "RIGHT", "UP", "DOWN"]:
                             ReleaseKey(direct_dic[action_cache.strip().split("_")[0]])
@@ -123,28 +123,54 @@ while True:
                             action_cache = None
                     elif abs(hero_xywh[0] - monster_box[0]) < attx and abs(hero_xywh[1] - monster_box[1]) > atty:
                         if hero_xywh[1] - monster_box[1] < 0:
-                            action_cache = move('DOWN', material=False, action_cache=None)
+                            action_cache = move('DOWN', material=False, action_cache=action_cache)
                         else:
-                            action_cache = move('UP', material=False, action_cache=None)
+                            action_cache = move('UP', material=False, action_cache=action_cache)
                     elif abs(hero_xywh[0] - monster_box[0]) > attx and abs(hero_xywh[1] - monster_box[1]) < atty:
                         if hero_xywh[0] - monster_box[0] < 0:
-                            action_cache = move('RIGHT', material=False, action_cache=None)
+                            action_cache = move('RIGHT', material=False, action_cache=action_cache)
                         else:
-                            action_cache = move('LEFT', material=False, action_cache=None)
+                            action_cache = move('LEFT', material=False, action_cache=action_cache)
                     elif abs(hero_xywh[0] - monster_box[0]) > attx and abs(hero_xywh[1] - monster_box[1]) > atty:
                         if hero_xywh[0] - monster_box[0] < 0 and hero_xywh[1] - monster_box[1] < 0:
-                            action_cache = move('RIGHT_UP', material=False, action_cache=None)
+                            action_cache = move('RIGHT_UP', material=False, action_cache=action_cache)
                         elif hero_xywh[0] - monster_box[0] < 0 and hero_xywh[1] - monster_box[1] > 0:
-                            action_cache = move('RIGHT_DOWN', material=False, action_cache=None)
+                            action_cache = move('RIGHT_DOWN', material=False, action_cache=action_cache)
                         elif hero_xywh[0] - monster_box[0] > 0 and hero_xywh[1] - monster_box[1] < 0:
-                            action_cache = move('LEFT_UP', material=False, action_cache=None)
+                            action_cache = move('LEFT_DOWN', material=False, action_cache=action_cache)
                         elif hero_xywh[0] - monster_box[0] > 0 and hero_xywh[1] - monster_box[1] > 0:
-                            action_cache = move('LEFT_DOWN', material=False, action_cache=None)
+                            action_cache = move('LEFT_UP', material=False, action_cache=action_cache)
                 elif 'boss' in cls_object:
                     print('攻击boss')
                     # action_cache =  key_press('A')
+                elif 'mat' in cls_object:
+                    print('减材料')
+                elif 'box' in cls_object:
+                    print('ESC')
+                elif 'option' in cls_object:
+                    print('next GAME  right ctrl')
+                    thisDirectionIndex = 0
                 else:
-                    print('没有识别到任何有效目标,去下一个门')
+                    # 门的位置小于抓取的一半，在左侧
+                    door_box = []
+                    door_index = 0
+                    for idx, (c, box) in enumerate(zip(cls_object, img_object)):
+                        if c == 'door':
+                            door_box = box
+                            door_index = idx
+                    if not door_box or door_box[0] < img0.shape[0] // 2:
+                        print('没有识别到门，门在左侧,固定去下一个门')
+                        action_cache = move(yamlDoorDirection[thisDirectionIndex], material=False, action_cache=action_cache)
+                    elif abs(door_box[1] - hero_xywh[1]) < thy and abs(door_box[0] - hero_xywh[0]) < thx:
+                        action_cache = None
+                        print("进入下一地图")
+                        thisDirectionIndex += 1
+                    elif door_box[1] - hero_xywh[1] > thy and door_box[0] - hero_xywh[0] > thx:
+                        action_cache = move(direct="RIGHT_DOWN", action_cache=action_cache)
+                    elif door_box[1] - hero_xywh[1] > thy and door_box[0] - hero_xywh[0] < thx:
+                        action_cache = move(direct="DOWN", action_cache=action_cache)
+                    elif door_box[1] - hero_xywh[1] < thy and door_box[0] - hero_xywh[0] > thx:
+                        action_cache = move(direct="RIGHT", action_cache=action_cache)
             img0 = cv2.resize(img0, (600, 375))
             if view_img:
                 cv2.imshow('window', img0)

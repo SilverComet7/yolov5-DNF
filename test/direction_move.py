@@ -7,8 +7,9 @@ direct_dic = {"UP": 0xC8, "DOWN": 0xD0, "LEFT": 0xCB, "RIGHT": 0xCD}
 
 def move(direct, material=False, action_cache=None, press_delay=0.1,
          release_delay=0.1):
+    print(action_cache)
     if direct == "RIGHT":
-        if action_cache != None:
+        if action_cache is not None:
             if action_cache != "RIGHT":
                 if action_cache not in ["LEFT", "RIGHT", "UP", "DOWN"]:
                     ReleaseKey(direct_dic[action_cache.strip().split("_")[0]])
@@ -37,7 +38,7 @@ def move(direct, material=False, action_cache=None, press_delay=0.1,
         return action_cache
 
     elif direct == "LEFT":
-        if action_cache != None:
+        if action_cache is not None:
             if action_cache != "LEFT":
                 if action_cache not in ["LEFT", "RIGHT", "UP", "DOWN"]:
                     ReleaseKey(direct_dic[action_cache.strip().split("_")[0]])
