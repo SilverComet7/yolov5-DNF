@@ -45,7 +45,10 @@ def plot_one_box(x, img, color=None, label=None, line_thickness=None):
         cv2.putText(img, label, (c1[0], c1[1] - 2), 0, tl / 3, [225, 255, 255], thickness=tf, lineType=cv2.LINE_AA)
 
 
+# 幽暗密林
 yamlDoorDirection = ['RIGHT', 'RIGHT', 'UP', 'RIGHT']
+# 王之摇篮
+wzylDoorDirection = ['UP', 'LEFT', 'UP', 'RIGHT', 'UP', 'UP']
 
 while True:
 
@@ -144,7 +147,7 @@ while True:
                     print('攻击boss')
                     # action_cache =  key_press('A')
                 elif 'mat' in cls_object:
-                    print('减材料')
+                    print('减发光材料')
                 elif 'box' in cls_object:
                     print('ESC')
                 elif 'option' in cls_object:
@@ -160,7 +163,8 @@ while True:
                             door_index = idx
                     if not door_box or door_box[0] < img0.shape[0] // 2:
                         print('没有识别到门，门在左侧,固定去下一个门')
-                        action_cache = move(yamlDoorDirection[thisDirectionIndex], material=False, action_cache=action_cache)
+                        action_cache = move(yamlDoorDirection[thisDirectionIndex], material=False,
+                                            action_cache=action_cache)
                     elif abs(door_box[1] - hero_xywh[1]) < thy and abs(door_box[0] - hero_xywh[0]) < thx:
                         action_cache = None
                         print("进入下一地图")
