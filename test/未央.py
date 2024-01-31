@@ -103,5 +103,4 @@ if det is not None and len(det):
         # if 1-8 in cls_object:
         #     nextGame
         # else:
-        #     shutDown and 通知爬楼完成,需要补货，清理背包  返回
-
+        #     shutDown and 通知爬楼完成,需要补货，清理背包  返回主界面
