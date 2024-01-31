@@ -1,7 +1,7 @@
 import time
 
 from directkeys import PressKey, ReleaseKey
-
+2
 direct_dic = {"UP": 0xC8, "DOWN": 0xD0, "LEFT": 0xCB, "RIGHT": 0xCD}
 
 def move(direct, material=False, action_cache=None, press_delay=0.1, release_delay=0.1):
